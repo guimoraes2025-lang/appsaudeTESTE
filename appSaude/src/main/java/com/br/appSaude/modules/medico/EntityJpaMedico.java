@@ -32,6 +32,4 @@ public class EntityJpaMedico {
 
     @Column(length = 11, nullable = false, unique = true)
     private String cpfMedico;
-
-
 }
