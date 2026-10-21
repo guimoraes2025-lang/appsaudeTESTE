@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    placeholders:
+      staff_atendente_cpf: ${APP_STAFF_ATENDENTE_CPF:}
+      staff_atendente_hash: ${APP_STAFF_ATENDENTE_BCRYPT_HASH:}
+      staff_medico_cpf: ${APP_STAFF_MEDICO_CPF:}
+      staff_medico_crm: ${APP_STAFF_MEDICO_CRM:}
+      staff_medico_hash: ${APP_STAFF_MEDICO_BCRYPT_HASH:}
+
+app:
+  auth:
+    jwt-secret: ${APP_AUTH_JWT_SECRET}
