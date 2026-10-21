@@ -1,0 +1,10 @@
+.git
+.idea
+target
+appSaude/.env
+appSaude/.idea
+appSaude/.mvn
+appSaude/.maven-home
+appSaude/target
+appSaude/build
+appSaude/*.iml
