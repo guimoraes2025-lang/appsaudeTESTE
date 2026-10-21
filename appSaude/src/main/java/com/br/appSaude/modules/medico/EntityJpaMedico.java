@@ -15,23 +15,26 @@ public class EntityJpaMedico {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_medico")
     Long id;
 
-    @Column(length = 150, nullable = false)
+    @Column(name = "nome_medico", length = 155, nullable = false)
     private String nome;
 
-    @Column(length = 100)
+    @Column(name = "especialidade_medico", length = 100)
     private String especialidadeMedico;
 
-    @Column(length = 20)
+    @Column(name = "crm_medico", length = 20, nullable = false, unique = true)
     private String crmMedico;
 
-    @Column(length = 255, nullable = false)
-    private String senha;
-
-
-    @Column(length = 11, nullable = false, unique = true)
+    @Column(name = "cpf_medico", length = 11, nullable = false, unique = true)
     private String cpfMedico;
+
+    @Column(name = "email_medico", length = 150)
+    private String email;
+
+    @Column(name = "telefone_medico", length = 20)
+    private String telefone;
 
 
 }

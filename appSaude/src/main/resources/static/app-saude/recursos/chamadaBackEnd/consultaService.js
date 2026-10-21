@@ -4,41 +4,49 @@ import { ApiService } from "./api.js";
 class ConsultaService extends ApiService {
 
     criar(dto) {
-        return this.fetch("/consultas", {
+        return this.fetch("/pacientes/consultas", {
             method: "POST",
             body: JSON.stringify(dto),
         });
     }
 
     atualizar(id, dto) {
-        return this.fetch(`/consultas/${id}`, {
+        return this.fetch(`/pacientes/consultas/${id}`, {
             method: "PUT",
             body: JSON.stringify(dto),
         });
     }
 
+    finalizar(id, observacoes) {
+        return this.fetch(`/medicos/consultas/${id}/finalizar`, {
+            method: "PATCH",
+            body: JSON.stringify({ observacoes }),
+        });
+    }
+
     cancelar(id) {
-        return this.fetch(`/consultas/${id}`, {
+        return this.fetch(`/pacientes/consultas/${id}`, {
             method: "DELETE",
         });
     }
 
     getById(id) {
-        return this.fetch(`/consultas/${id}`);
+        const role = JSON.parse(localStorage.getItem("usuario") || "{}").role;
+        const base = role === "MEDICO" ? "/medicos" : role === "ATENDENTE" ? "/atendentes" : "/pacientes";
+        return this.fetch(`${base}/consultas/${id}`);
     }
 
     listarPorPaciente(pacienteId) {
-        return this.fetch(`/consultas?pacienteId=${pacienteId}`);
+        return this.fetch("/pacientes/consultas");
     }
 
     listarPorStatus(pacienteId, status) {
-        return this.fetch(`/consultas?pacienteId=${pacienteId}&status=${status}`);
+        return this.fetch("/pacientes/consultas").then((consultas) => consultas.filter((c) => c.status === status));
     }
 
     listarPorMedico(medicoId, data) {
-        const params = new URLSearchParams({ medicoId });
-        if (data) params.set("data", data);
-        return this.fetch(`/consultas?${params.toString()}`);
+        return this.fetch("/medicos/consultas").then((consultas) =>
+            data ? consultas.filter((c) => c.data === data) : consultas);
     }
 
     listarTodas(filtros = {}) {
@@ -46,7 +54,9 @@ class ConsultaService extends ApiService {
             Object.entries(filtros).filter(([, valor]) => valor !== undefined && valor !== null && valor !== "")
         );
         const query = params.toString();
-        return this.fetch(`/consultas${query ? `?${query}` : ""}`);
+        return this.fetch(`/atendentes/consultas${query ? `?${query}` : ""}`).then((consultas) =>
+            filtros.paciente ? consultas.filter((c) => (c.pacienteNome ?? "").toLowerCase()
+                .includes(filtros.paciente.toLowerCase())) : consultas);
     }
 }
 

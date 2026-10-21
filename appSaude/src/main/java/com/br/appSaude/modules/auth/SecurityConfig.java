@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.MediaType;
 
 @Configuration
 @EnableWebSecurity
@@ -33,12 +34,26 @@ public class SecurityConfig {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/app-saude/**", "/resources/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/cadastro").permitAll()
+                        .requestMatchers("/auth/verificacao/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/medicos", "/medicos/especialidades").permitAll()
                         .requestMatchers("/auth/me").authenticated()
                         .requestMatchers("/atendentes/**").hasRole("ATENDENTE")
                         .requestMatchers("/medicos/**").hasRole("MEDICO")
                         .requestMatchers("/pacientes/**").hasRole("USUARIO")
                         .anyRequest().authenticated())
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, error) -> {
+                            response.setStatus(401);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write("{\"message\":\"Autenticação necessária ou sessão expirada.\"}");
+                        })
+                        .accessDeniedHandler((request, response, error) -> {
+                            response.setStatus(403);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write("{\"message\":\"Você não tem permissão para acessar este recurso.\"}");
+                        }))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

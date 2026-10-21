@@ -2,6 +2,7 @@
 import { authService } from "../../recursos/chamadaBackEnd/authService.js";
 import { consultaService } from "../../recursos/chamadaBackEnd/consultaService.js";
 import { preencherSidebarStaff } from "../../recursos/js/staffSidebar.js";
+import { escapeHtml, hojeLocalISO } from "../../recursos/js/seguranca.js";
 
 const usuario = authService.getUsuarioLogado();
 preencherSidebarStaff(usuario);
@@ -14,7 +15,7 @@ document.querySelector("#btn-logout").addEventListener("click", () => {
 const dataAtualEl = document.querySelector("#data-atual");
 const hoje = new Date();
 dataAtualEl.textContent = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
-const hojeISO = hoje.toISOString().slice(0, 10);
+const hojeISO = hojeLocalISO();
 
 const filtroPaciente = document.querySelector("#filtro-paciente");
 const filtroSituacao = document.querySelector("#filtro-situacao");
@@ -24,7 +25,7 @@ const btnAtualizar = document.querySelector("#btn-atualizar");
 
 function classesPill(status) {
     const mapa = {
-        PENDENTE: { classe: "pill--agendado", texto: "Agendado", linha: "row--espera" },
+        AGENDADA: { classe: "pill--agendado", texto: "Agendado", linha: "row--espera" },
         CONFIRMADA: { classe: "pill--confirmado", texto: "Confirmado", linha: "row--confirmado" },
         REALIZADA: { classe: "pill--finalizado", texto: "Finalizado", linha: "row--finalizado" },
         CANCELADA: { classe: "pill--cancelado", texto: "Cancelado", linha: "row--cancelado" },
@@ -44,11 +45,11 @@ function renderLista(consultas) {
         .map((consulta) => {
             const pill = classesPill(consulta.status);
             return `
-                <a class="row ${pill.linha}" href="../detalhes-consulta-medico/index.html?id=${consulta.id}">
-                    <span class="horario">${consulta.horario ?? ""}</span>
+                <a class="row ${pill.linha}" href="../detalhes-consulta-medico/detalhes-consulta-medico.html?id=${encodeURIComponent(consulta.id)}">
+                    <span class="horario">${escapeHtml(consulta.hora)}</span>
                     <span class="quem">
-                        <strong>${consulta.paciente ?? "Paciente"}</strong>
-                        <span>${consulta.especialidade ?? ""}</span>
+                        <strong>${escapeHtml(consulta.pacienteNome ?? "Paciente")}</strong>
+                        <span>${escapeHtml(consulta.especialidade)}</span>
                     </span>
                     <span class="pill ${pill.classe}">${pill.texto}</span>
                     <span class="seta">›</span>
@@ -69,14 +70,14 @@ async function carregar() {
 
         const filtradas = consultas.filter((c) => {
             const combinaPaciente = !filtroPaciente.value.trim()
-                || (c.paciente ?? "").toLowerCase().includes(filtroPaciente.value.trim().toLowerCase());
+                || (c.pacienteNome ?? "").toLowerCase().includes(filtroPaciente.value.trim().toLowerCase());
             const combinaStatus = !filtroSituacao.value || c.status === filtroSituacao.value;
             return combinaPaciente && combinaStatus;
         });
 
         renderLista(filtradas);
     } catch (error) {
-        listaConsultas.innerHTML = `<p class="estado estado--erro">${error.message || "Não foi possível carregar as consultas."}</p>`;
+        listaConsultas.textContent = error.message || "Não foi possível carregar as consultas.";
     }
 }
 

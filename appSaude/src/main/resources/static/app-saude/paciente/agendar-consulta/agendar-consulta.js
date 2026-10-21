@@ -1,6 +1,7 @@
 // paciente/agendar-consulta/login-medico-atendente.js
 import { authService } from "../../recursos/chamadaBackEnd/authService.js";
 import { consultaService } from "../../recursos/chamadaBackEnd/consultaService.js";
+import { medicoService } from "../../recursos/chamadaBackEnd/medicoService.js";
 import { preencherSidebarUsuario } from "../../recursos/js/sidebarUsuario.js";
 
 const usuario = authService.getUsuarioLogado();
@@ -38,6 +39,30 @@ const form = document.querySelector("#form-agendar");
 const btnSolicitar = document.querySelector("#btn-solicitar");
 const mensagem = document.querySelector("#mensagem-agendamento");
 
+async function carregarMedicos() {
+    const select = document.querySelector("#medico");
+    const especialidade = document.querySelector("#especialidade");
+    const atualizar = async () => {
+        const selecionado = select.value;
+        select.replaceChildren(new Option("Selecione o médico", ""));
+        try {
+            const medicos = await medicoService.listar(especialidade.value);
+            for (const medico of medicos) {
+                select.add(new Option(`${medico.nome} · ${medico.especialidade ?? ""}`, medico.id));
+            }
+            if ([...select.options].some((option) => option.value === selecionado)) select.value = selecionado;
+            const medicoParam = params.get("medicoId");
+            if (editandoId && medicoParam && [...select.options].some((option) => option.value === medicoParam)) {
+                select.value = medicoParam;
+            }
+        } catch (error) {
+            mostrarMensagem(error.message || "Não foi possível carregar os médicos.", true);
+        }
+    };
+    especialidade.addEventListener("change", atualizar);
+    await atualizar();
+}
+
 function mostrarMensagem(texto, erro = false) {
     mensagem.textContent = texto;
     mensagem.style.display = "block";
@@ -53,12 +78,10 @@ form.addEventListener("submit", async (event) => {
     }
 
     const dto = {
-        pacienteId: usuario.id,
-        especialidade: document.querySelector("#especialidade").value,
-        medico: document.querySelector("#medico").value || null,
+        medicoId: Number(document.querySelector("#medico").value),
         data: document.querySelector("#data").value,
-        horario: document.querySelector("#horario").value,
-        observacao: document.querySelector("#observacao").value.trim(),
+        hora: document.querySelector("#horario").value,
+        observacoes: document.querySelector("#observacao").value.trim(),
     };
 
     btnSolicitar.disabled = true;
@@ -79,3 +102,5 @@ form.addEventListener("submit", async (event) => {
         btnSolicitar.disabled = false;
     }
 });
+
+carregarMedicos();

@@ -29,7 +29,8 @@ class AuthService extends ApiService {
     getUsuarioLogado() {
         const raw = localStorage.getItem("usuario");
 
-        return raw ? JSON.parse(raw) : null;
+        if (!raw) return null;
+        try { return JSON.parse(raw); } catch { this.logout(); return null; }
     }
 }
 

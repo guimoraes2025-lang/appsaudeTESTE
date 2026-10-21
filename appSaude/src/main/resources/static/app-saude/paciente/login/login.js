@@ -8,7 +8,7 @@ const mensagem = document.querySelector("#mensagem");
 form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const cpf = cpfInput.value.trim();
+    const cpf = cpfInput.value.replace(/\D/g, "");
     const senha = senhaInput.value;
 
     if (!cpf || !senha) {

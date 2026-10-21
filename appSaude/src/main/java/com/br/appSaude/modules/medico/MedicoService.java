@@ -1,10 +1,12 @@
 package com.br.appSaude.modules.medico;
 
 import com.br.appSaude.modules.consultas.EntityJpaConsultas;
+import com.br.appSaude.modules.auth.UsuarioAuthRepository;
 import com.br.appSaude.modules.medico.dto.AtualizarMedicoRequest;
 import com.br.appSaude.modules.medico.dto.ConsultaMedicoResponse;
 import com.br.appSaude.modules.medico.dto.FinalizarConsultaRequest;
 import com.br.appSaude.modules.medico.dto.MedicoPerfilResponse;
+import com.br.appSaude.modules.medico.dto.MedicoPublicoResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,18 +19,37 @@ public class MedicoService {
     private final MedicoRepository medicoRepository;
     private final MedicoConsultaRepository consultaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UsuarioAuthRepository usuarioAuthRepository;
 
     public MedicoService(MedicoRepository medicoRepository,
                          MedicoConsultaRepository consultaRepository,
-                         PasswordEncoder passwordEncoder) {
+                         PasswordEncoder passwordEncoder,
+                         UsuarioAuthRepository usuarioAuthRepository) {
         this.medicoRepository = medicoRepository;
         this.consultaRepository = consultaRepository;
         this.passwordEncoder = passwordEncoder;
+        this.usuarioAuthRepository = usuarioAuthRepository;
     }
 
     @Transactional(readOnly = true)
     public MedicoPerfilResponse perfil(String cpf) {
         return toPerfil(buscarMedico(cpf));
+    }
+
+    @Transactional(readOnly = true)
+    public List<MedicoPublicoResponse> listarPublico(String especialidade) {
+        var medicos = especialidade == null || especialidade.isBlank()
+                ? medicoRepository.findAllByOrderByNomeAsc()
+                : medicoRepository.findByEspecialidadeMedicoIgnoreCaseOrderByNomeAsc(especialidade);
+        return medicos.stream().map(m -> new MedicoPublicoResponse(
+                m.getId(), m.getNome(), m.getEspecialidadeMedico(), m.getCrmMedico())).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> listarEspecialidades() {
+        return medicoRepository.findAllByOrderByNomeAsc().stream()
+                .map(EntityJpaMedico::getEspecialidadeMedico).filter(s -> s != null && !s.isBlank())
+                .distinct().sorted().toList();
     }
 
     @Transactional
@@ -37,17 +58,21 @@ public class MedicoService {
         medico.setNome(request.nome().trim());
         medico.setEspecialidadeMedico(request.especialidade());
         medico.setCrmMedico(request.crm());
+        medico.setEmail(request.email());
+        medico.setTelefone(request.telefone());
         return toPerfil(medicoRepository.save(medico));
     }
 
     @Transactional
     public void alterarSenha(String cpf, String senhaAtual, String novaSenha) {
         EntityJpaMedico medico = buscarMedico(cpf);
-        if (!passwordEncoder.matches(senhaAtual, medico.getSenha())) {
+        var usuario = usuarioAuthRepository.findByCpf(cpf)
+                .orElseThrow(() -> new EntityNotFoundException("Conta do médico não encontrada."));
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenhaHash())) {
             throw new IllegalArgumentException("A senha atual está incorreta.");
         }
-        medico.setSenha(passwordEncoder.encode(novaSenha));
-        medicoRepository.save(medico);
+        usuario.setSenhaHash(passwordEncoder.encode(novaSenha));
+        usuarioAuthRepository.save(usuario);
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +113,7 @@ public class MedicoService {
 
     private MedicoPerfilResponse toPerfil(EntityJpaMedico medico) {
         return new MedicoPerfilResponse(medico.getId(), medico.getNome(), medico.getCpfMedico(),
-                medico.getEspecialidadeMedico(), medico.getCrmMedico());
+                medico.getEspecialidadeMedico(), medico.getCrmMedico(), medico.getEmail(), medico.getTelefone());
     }
 
     private ConsultaMedicoResponse toConsulta(EntityJpaConsultas consulta) {

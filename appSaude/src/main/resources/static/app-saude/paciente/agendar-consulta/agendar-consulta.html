@@ -71,7 +71,7 @@
           <label for="filtro-status">Mostrar:</label>
           <select id="filtro-status">
             <option value="REALIZADA" selected>Concluídas</option>
-            <option value="PENDENTE">Pendentes</option>
+            <option value="AGENDADA">Pendentes</option>
             <option value="CONFIRMADA">Confirmadas</option>
             <option value="CANCELADA">Canceladas</option>
           </select>
@@ -97,8 +97,8 @@
               </div>
               <div class="campo">
                 <label for="medico">Médico</label>
-                <select id="medico" name="medico">
-                  <option value="">Primeiro disponível</option>
+                <select id="medico" name="medico" required>
+                  <option value="">Selecione o médico</option>
                 </select>
               </div>
             </div>

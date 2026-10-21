@@ -20,34 +20,34 @@ import java.time.LocalTime;
 public class EntityJpaConsultas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idConsulta")
+    @Column(name = "id_consulta")
     private Long idConsulta;
 
-    @Column(name = "dataConsulta", nullable = false)
+    @Column(name = "data_consulta", nullable = false)
     private LocalDate dataConsulta;
 
-    @Column(name = "horaConsulta", nullable = false)
+    @Column(name = "hora_consulta", nullable = false)
     private LocalTime horaConsulta;
 
-    @Column(name = "statusConsulta", length = 20)
+    @Column(name = "status_consulta", length = 20)
     private String statusConsulta;
 
-    @Column(name = "observacoesConsulta", columnDefinition = "TEXT")
+    @Column(name = "observacoes", columnDefinition = "TEXT")
     private String observacoesConsulta;
 
-    @Column(name = "criado_emConsulta", updatable = false)
+    @Column(name = "criado_em", insertable = false, updatable = false)
     private LocalDateTime criadoEmConsulta;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pacientes_idPaciente", nullable = false)
+    @JoinColumn(name = "paciente_id", nullable = false)
     private EntityJpaPaciente paciente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "medico_idMedico", nullable = false)
+    @JoinColumn(name = "medico_id", nullable = false)
     private EntityJpaMedico medico;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "atendente_idAtendente")
+    @JoinColumn(name = "atendente_id")
     private EntittyJpaAtendente atendente;
 
 }

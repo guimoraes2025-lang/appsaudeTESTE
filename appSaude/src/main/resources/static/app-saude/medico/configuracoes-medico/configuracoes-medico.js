@@ -20,6 +20,8 @@ function mostrarMensagem(el, texto, erro = false) {
 const nomeInput = document.querySelector("#nome");
 const emailInput = document.querySelector("#email");
 const telefoneInput = document.querySelector("#telefone");
+const especialidadeInput = document.querySelector("#especialidade");
+const crmInput = document.querySelector("#crm");
 const btnSalvar = document.querySelector("#btn-salvar");
 const mensagemPerfil = document.querySelector("#mensagem-perfil");
 
@@ -34,6 +36,8 @@ async function carregarPerfil() {
         nomeInput.value = perfil.nome ?? "";
         emailInput.value = perfil.email ?? "";
         telefoneInput.value = perfil.telefone ?? "";
+        especialidadeInput.value = perfil.especialidade ?? "";
+        crmInput.value = perfil.crm ?? "";
     } catch (error) {
         mostrarMensagem(mensagemPerfil, error.message || "Não foi possível carregar seus dados.", true);
     }
@@ -51,6 +55,8 @@ document.querySelector("#form-perfil").addEventListener("submit", async (event) 
             nome: nomeInput.value.trim(),
             email: emailInput.value.trim(),
             telefone: telefoneInput.value.trim(),
+            especialidade: especialidadeInput.value.trim(),
+            crm: crmInput.value.trim(),
         });
         mostrarMensagem(mensagemPerfil, "Dados atualizados com sucesso.");
     } catch (error) {

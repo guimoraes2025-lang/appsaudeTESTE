@@ -8,6 +8,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import com.br.appSaude.modules.consultas.EntityJpaConsultas;
+import com.br.appSaude.modules.atendente.dto.ConsultaAtendenteResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/atendentes")
@@ -17,6 +23,17 @@ public class AtendenteController {
 
     public AtendenteController(AtendenteService service) {
         this.service = service;
+    }
+
+    @GetMapping("/consultas")
+    public List<ConsultaAtendenteResponse> consultas(@RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+        return service.listarConsultas(status, data);
+    }
+
+    @GetMapping("/consultas/{id}")
+    public ConsultaAtendenteResponse consulta(@PathVariable Long id) {
+        return service.buscarConsulta(id);
     }
 
     @GetMapping("/perfil")
@@ -31,6 +48,7 @@ public class AtendenteController {
     }
 
     @PatchMapping("/perfil/senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void alterarSenha(@AuthenticationPrincipal UserDetails usuario,
                              @Valid @RequestBody AlterarSenhaRequest request) {
         service.alterarSenha(usuario.getUsername(), request);

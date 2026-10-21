@@ -1,6 +1,7 @@
 package com.br.appSaude.modules.paciente;
 
 import com.br.appSaude.modules.consultas.EntityJpaConsultas;
+import com.br.appSaude.modules.auth.UsuarioAuthRepository;
 import com.br.appSaude.modules.medico.EntityJpaMedico;
 import com.br.appSaude.modules.medico.MedicoRepository;
 import com.br.appSaude.modules.paciente.dto.AgendarConsultaRequest;
@@ -9,6 +10,7 @@ import com.br.appSaude.modules.paciente.dto.ConsultaPacienteResponse;
 import com.br.appSaude.modules.paciente.dto.PerfilPacienteResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -18,13 +20,30 @@ public class PacienteService {
     private final PacienteRepository pacienteRepository;
     private final PacienteConsultaRepository consultaRepository;
     private final MedicoRepository medicoRepository;
+    private final UsuarioAuthRepository usuarioAuthRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public PacienteService(PacienteRepository pacienteRepository,
                            PacienteConsultaRepository consultaRepository,
-                           MedicoRepository medicoRepository) {
+                           MedicoRepository medicoRepository,
+                           UsuarioAuthRepository usuarioAuthRepository,
+                           PasswordEncoder passwordEncoder) {
         this.pacienteRepository = pacienteRepository;
         this.consultaRepository = consultaRepository;
         this.medicoRepository = medicoRepository;
+        this.usuarioAuthRepository = usuarioAuthRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public void alterarSenha(String cpf, String senhaAtual, String novaSenha) {
+        var usuario = usuarioAuthRepository.findByCpf(cpf)
+                .orElseThrow(() -> new EntityNotFoundException("Conta do paciente não encontrada."));
+        if (!passwordEncoder.matches(senhaAtual, usuario.getSenhaHash())) {
+            throw new IllegalArgumentException("A senha atual está incorreta.");
+        }
+        usuario.setSenhaHash(passwordEncoder.encode(novaSenha));
+        usuarioAuthRepository.save(usuario);
     }
 
     @Transactional(readOnly = true)
@@ -59,8 +78,8 @@ public class PacienteService {
         EntityJpaPaciente paciente = buscarPaciente(cpf);
         EntityJpaMedico medico = medicoRepository.findById(request.medicoId())
                 .orElseThrow(() -> new EntityNotFoundException("Médico não encontrado."));
-        if (consultaRepository.existsByMedico_IdAndDataConsultaAndHoraConsulta(
-                medico.getId(), request.data(), request.hora())) {
+        if (consultaRepository.existsByMedico_IdAndDataConsultaAndHoraConsultaAndStatusConsultaNot(
+                medico.getId(), request.data(), request.hora(), "CANCELADA")) {
             throw new IllegalStateException("O médico já possui uma consulta nesse horário.");
         }
 
@@ -72,6 +91,27 @@ public class PacienteService {
                 .paciente(paciente)
                 .medico(medico)
                 .build();
+        return toConsulta(consultaRepository.save(consulta));
+    }
+
+    @Transactional
+    public ConsultaPacienteResponse reagendar(String cpf, Long id, AgendarConsultaRequest request) {
+        Long pacienteId = buscarPaciente(cpf).getId();
+        EntityJpaConsultas consulta = buscarConsultaDoPaciente(id, pacienteId);
+        if ("REALIZADA".equalsIgnoreCase(consulta.getStatusConsulta())
+                || "CANCELADA".equalsIgnoreCase(consulta.getStatusConsulta())) {
+            throw new IllegalStateException("Esta consulta não pode ser reagendada.");
+        }
+        EntityJpaMedico medico = medicoRepository.findById(request.medicoId())
+                .orElseThrow(() -> new EntityNotFoundException("Médico não encontrado."));
+        if (consultaRepository.existsByMedico_IdAndDataConsultaAndHoraConsultaAndStatusConsultaNotAndIdConsultaNot(
+                medico.getId(), request.data(), request.hora(), "CANCELADA", id)) {
+            throw new IllegalStateException("O médico já possui uma consulta nesse horário.");
+        }
+        consulta.setMedico(medico);
+        consulta.setDataConsulta(request.data());
+        consulta.setHoraConsulta(request.hora());
+        consulta.setObservacoesConsulta(request.observacoes());
         return toConsulta(consultaRepository.save(consulta));
     }
 

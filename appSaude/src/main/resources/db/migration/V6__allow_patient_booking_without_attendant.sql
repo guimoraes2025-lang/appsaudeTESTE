@@ -1,1 +1,1 @@
-ALTER TABLE consulta ALTER COLUMN atendente_idAtendente DROP NOT NULL;
+ALTER TABLE consulta ALTER COLUMN atendente_id DROP NOT NULL;

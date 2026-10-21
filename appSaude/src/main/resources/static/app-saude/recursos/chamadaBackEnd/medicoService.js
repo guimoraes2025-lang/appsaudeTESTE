@@ -2,20 +2,25 @@ import { ApiService } from "./api.js";
 
 class MedicoService extends ApiService {
 
-    getPerfil(id) {
-        return this.fetch(`/medicos/${id}`);
+    listar(especialidade) {
+        const query = especialidade ? `?especialidade=${encodeURIComponent(especialidade)}` : "";
+        return this.fetch(`/medicos${query}`);
+    }
+
+    getPerfil() {
+        return this.fetch("/medicos/perfil");
     }
 
     atualizarPerfil(id, dto) {
-        return this.fetch(`/medicos/${id}`, {
+        return this.fetch("/medicos/perfil", {
             method: "PUT",
             body: JSON.stringify(dto),
         });
     }
 
     atualizarSenha(id, senhaAtual, novaSenha) {
-        return this.fetch(`/medicos/${id}/senha`, {
-            method: "PUT",
+        return this.fetch("/medicos/perfil/senha", {
+            method: "PATCH",
             body: JSON.stringify({ senhaAtual, novaSenha }),
         });
     }

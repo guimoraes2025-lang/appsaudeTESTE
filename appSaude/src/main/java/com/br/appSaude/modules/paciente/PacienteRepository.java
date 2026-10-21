@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface PacienteRepository extends JpaRepository<EntityJpaPaciente, Long> {
     Optional<EntityJpaPaciente> findByCpfPaciente(String cpfPaciente);
+    boolean existsByEmailIgnoreCase(String email);
 }

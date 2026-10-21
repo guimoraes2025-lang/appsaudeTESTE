@@ -6,6 +6,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import com.br.appSaude.modules.auth.dto.AlterarSenhaRequest;
 
 import java.util.List;
 
@@ -30,6 +32,13 @@ public class PacienteController {
         return service.atualizarPerfil(usuario.getUsername(), request);
     }
 
+    @PatchMapping("/perfil/senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void alterarSenha(@AuthenticationPrincipal UserDetails usuario,
+                             @Valid @RequestBody AlterarSenhaRequest request) {
+        service.alterarSenha(usuario.getUsername(), request.senhaAtual(), request.novaSenha());
+    }
+
     @GetMapping("/consultas")
     public List<ConsultaPacienteResponse> consultas(@AuthenticationPrincipal UserDetails usuario) {
         return service.listarConsultas(usuario.getUsername());
@@ -47,7 +56,14 @@ public class PacienteController {
         return service.agendar(usuario.getUsername(), request);
     }
 
+    @PutMapping("/consultas/{id}")
+    public ConsultaPacienteResponse reagendar(@AuthenticationPrincipal UserDetails usuario,
+            @PathVariable Long id, @Valid @RequestBody AgendarConsultaRequest request) {
+        return service.reagendar(usuario.getUsername(), id, request);
+    }
+
     @DeleteMapping("/consultas/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelar(@AuthenticationPrincipal UserDetails usuario, @PathVariable Long id) {
         service.cancelar(usuario.getUsername(), id);
     }

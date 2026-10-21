@@ -2,12 +2,12 @@ import { ApiService } from "./api.js";
 
 class PacienteService extends ApiService {
 
-    getPerfil(id) {
-        return this.fetch(`/pacientes/${id}`);
+    getPerfil() {
+        return this.fetch("/pacientes/perfil");
     }
 
     atualizarPerfil(id, dto) {
-        return this.fetch(`/pacientes/${id}`, {
+        return this.fetch("/pacientes/perfil", {
             method: "PUT",
             body: JSON.stringify(dto),
         });
@@ -15,8 +15,8 @@ class PacienteService extends ApiService {
 
 
      atualizarSenha(id, senhaAtual, novaSenha) {
-        return this.fetch(`/pacientes/${id}/senha`, {
-            method: "PUT",
+        return this.fetch("/pacientes/perfil/senha", {
+            method: "PATCH",
             body: JSON.stringify({ senhaAtual, novaSenha }),
         });
     }

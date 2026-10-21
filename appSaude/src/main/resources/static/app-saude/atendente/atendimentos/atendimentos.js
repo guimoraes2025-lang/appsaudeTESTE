@@ -2,6 +2,7 @@
 import { authService } from "../../recursos/chamadaBackEnd/authService.js";
 import { consultaService } from "../../recursos/chamadaBackEnd/consultaService.js";
 import { preencherSidebarStaff } from "../../recursos/js/staffSidebar.js";
+import { escapeHtml, hojeLocalISO } from "../../recursos/js/seguranca.js";
 
 const usuario = authService.getUsuarioLogado();
 preencherSidebarStaff(usuario, "Atendente · Recepção");
@@ -29,7 +30,7 @@ const statTotal = document.querySelector("#stat-total");
 const statAgendadas = document.querySelector("#stat-agendadas");
 const statProximo = document.querySelector("#stat-proximo");
 
-filtroData.value = new Date().toISOString().slice(0, 10);
+filtroData.value = hojeLocalISO();
 
 function formatarDataLonga(dataISO) {
     if (!dataISO) return "";
@@ -39,7 +40,7 @@ function formatarDataLonga(dataISO) {
 
 function classesPill(status) {
     const mapa = {
-        PENDENTE: { classe: "pill--agendado", texto: "Agendado", linha: "" },
+        AGENDADA: { classe: "pill--agendado", texto: "Agendado", linha: "" },
         CONFIRMADA: { classe: "pill--confirmado", texto: "Confirmado", linha: "row--confirmado" },
         REALIZADA: { classe: "pill--finalizado", texto: "Finalizado", linha: "row--finalizado" },
         CANCELADA: { classe: "pill--cancelado", texto: "Cancelado", linha: "row--cancelado" },
@@ -57,11 +58,11 @@ function renderLista(consultas) {
         .map((consulta) => {
             const pill = classesPill(consulta.status);
             return `
-                <a class="row ${pill.linha}" href="../../medico/detalhes-consulta-medico/index.html?id=${consulta.id}">
-                    <span class="horario">${consulta.horario ?? ""}</span>
+                <a class="row ${pill.linha}" href="../detalhes-consulta-atendente/detalhes-consulta-atendente.html?id=${encodeURIComponent(consulta.id)}">
+                    <span class="horario">${escapeHtml(consulta.hora)}</span>
                     <span class="quem">
-                        <strong>${consulta.paciente ?? "Paciente"}</strong>
-                        <span>${consulta.especialidade ?? ""} · ${consulta.medico ?? ""}</span>
+                        <strong>${escapeHtml(consulta.pacienteNome ?? "Paciente")}</strong>
+                        <span>${escapeHtml(consulta.medicoNome ?? "Médico")}</span>
                     </span>
                     <span class="pill ${pill.classe}">${pill.texto}</span>
                     <span class="seta">›</span>
@@ -84,11 +85,11 @@ async function carregar() {
 
         statTotal.textContent = consultas.length;
         statAgendadas.textContent = consultas.filter((c) => c.status !== "CANCELADA" && c.status !== "REALIZADA").length;
-        statProximo.textContent = consultas[0]?.horario ?? "--:--";
+        statProximo.textContent = consultas[0]?.hora ?? "--:--";
 
         renderLista(consultas);
     } catch (error) {
-        listaAtendimentos.innerHTML = `<p class="estado estado--erro">${error.message || "Não foi possível carregar os atendimentos."}</p>`;
+        listaAtendimentos.textContent = error.message || "Não foi possível carregar os atendimentos.";
     }
 }
 

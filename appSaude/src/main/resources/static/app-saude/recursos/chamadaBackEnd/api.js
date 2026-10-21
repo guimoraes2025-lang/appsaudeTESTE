@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = window.location.origin;
 
 export class ApiService {
     constructor() {
@@ -23,6 +23,16 @@ export class ApiService {
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({}));
+            if (res.status === 401 || res.status === 403) {
+                const eraStaff = location.pathname.includes("/medico/") || location.pathname.includes("/atendente/");
+                localStorage.removeItem("token");
+                localStorage.removeItem("usuario");
+                if (!location.pathname.includes("login")) {
+                    location.href = eraStaff
+                        ? "/app-saude/telas-comuns/login-medico-atendente/login-medico-atendente.html"
+                        : "/app-saude/paciente/login/login.html";
+                }
+            }
             throw new Error(error.message || `Erro ${res.status}`);
         }
 
@@ -42,6 +52,14 @@ export class ApiService {
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({}));
+            if (res.status === 401 || res.status === 403) {
+                const eraStaff = location.pathname.includes("/medico/") || location.pathname.includes("/atendente/");
+                localStorage.removeItem("token");
+                localStorage.removeItem("usuario");
+                if (!location.pathname.includes("login")) location.href = eraStaff
+                    ? "/app-saude/telas-comuns/login-medico-atendente/login-medico-atendente.html"
+                    : "/app-saude/paciente/login/login.html";
+            }
             throw new Error(error.message || `Erro ${res.status}`);
         }
 

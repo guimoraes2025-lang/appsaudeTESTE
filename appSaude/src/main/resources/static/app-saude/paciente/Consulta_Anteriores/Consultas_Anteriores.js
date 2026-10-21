@@ -66,8 +66,8 @@ function dataLimite(meses) {
 }
 
 function ordenarMaisRecentesPrimeiro(a, b) {
-    const chaveA = `${a.data ?? ""}T${formatarHorario(a.horario)}`;
-    const chaveB = `${b.data ?? ""}T${formatarHorario(b.horario)}`;
+    const chaveA = `${a.data ?? ""}T${formatarHorario(a.hora)}`;
+    const chaveB = `${b.data ?? ""}T${formatarHorario(b.hora)}`;
     return chaveB.localeCompare(chaveA);
 }
 
@@ -84,7 +84,7 @@ function aplicarFiltros() {
         .filter((c) => {
             if (!termo) return true;
             return (
-                normalizar(c.medico).includes(termo) ||
+                normalizar(c.medicoNome).includes(termo) ||
                 normalizar(c.especialidade).includes(termo)
             );
         })
@@ -115,9 +115,9 @@ function renderLista() {
 
             return `
                 <li class="consulta-item ${visual.classeItem}">
-                    <span class="consulta-hora">${escapeHtml(formatarHorario(consulta.horario))}</span>
+                    <span class="consulta-hora">${escapeHtml(formatarHorario(consulta.hora))}</span>
                     <div class="consulta-info">
-                        <strong>${escapeHtml(consulta.medico ?? "Profissional não informado")}</strong>
+                        <strong>${escapeHtml(consulta.medicoNome ?? "Profissional não informado")}</strong>
                         <span>${escapeHtml(consulta.especialidade ?? "")} · ${formatarData(consulta.data)}</span>
                     </div>
                     <span class="tag-status ${visual.classeTag}">${visual.texto}</span>
@@ -136,11 +136,11 @@ function baixarHistorico(event) {
     const cabecalho = ["Data", "Horário", "Médico", "Especialidade", "Situação", "Observação"];
     const linhas = consultasFiltradas.map((c) => [
         formatarData(c.data),
-        formatarHorario(c.horario),
-        c.medico ?? "",
+        formatarHorario(c.hora),
+        c.medicoNome ?? "",
         c.especialidade ?? "",
         STATUS_VISUAL[c.status]?.texto ?? c.status ?? "",
-        c.observacao ?? "",
+        c.observacoes ?? "",
     ]);
 
     const csv = [cabecalho, ...linhas]

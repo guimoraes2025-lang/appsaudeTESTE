@@ -9,20 +9,23 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "Atendente")
+@Table(name = "atendente")
 public class EntittyJpaAtendente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idAtendente")
+    @Column(name = "id_atendente")
     private Long idAtendente;
 
-    @Column(name = "cpfAtendente", length = 11, nullable = false)
+    @Column(name = "cpf_atendente", length = 11, nullable = false, unique = true)
     private String cpfAtendente;
 
-    @Column(name = "senhaAtendente", length = 255, nullable = false)
-    private String senhaAtendente;
-
-    @Column(name = "nomeAtendente", length = 150, nullable = false)
+    @Column(name = "nome_atendente", length = 150, nullable = false)
     private String nomeAtendente;
+
+    @Column(name = "email_atendente", length = 150)
+    private String email;
+
+    @Column(name = "telefone_atendente", length = 20)
+    private String telefone;
 }

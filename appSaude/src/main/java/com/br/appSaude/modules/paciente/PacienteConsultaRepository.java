@@ -11,5 +11,8 @@ import java.util.Optional;
 public interface PacienteConsultaRepository extends JpaRepository<EntityJpaConsultas, Long> {
     List<EntityJpaConsultas> findByPaciente_IdOrderByDataConsultaDescHoraConsultaDesc(Long pacienteId);
     Optional<EntityJpaConsultas> findByIdConsultaAndPaciente_Id(Long consultaId, Long pacienteId);
-    boolean existsByMedico_IdAndDataConsultaAndHoraConsulta(Long medicoId, LocalDate data, LocalTime hora);
+    boolean existsByMedico_IdAndDataConsultaAndHoraConsultaAndStatusConsultaNot(
+            Long medicoId, LocalDate data, LocalTime hora, String statusConsulta);
+    boolean existsByMedico_IdAndDataConsultaAndHoraConsultaAndStatusConsultaNotAndIdConsultaNot(
+            Long medicoId, LocalDate data, LocalTime hora, String statusConsulta, Long idConsulta);
 }

@@ -29,17 +29,17 @@ async function carregar() {
     try {
         const consulta = await consultaService.getById(consultaId);
 
-        document.querySelector("#titulo-atendimento").textContent = `Atendimento de ${consulta.paciente ?? "paciente"}`;
-        document.querySelector("#pessoa-nome").textContent = consulta.paciente ?? "–";
+        document.querySelector("#titulo-atendimento").textContent = `Atendimento de ${consulta.pacienteNome ?? "paciente"}`;
+        document.querySelector("#pessoa-nome").textContent = consulta.pacienteNome ?? "–";
         document.querySelector("#pessoa-sub").textContent = consulta.pacienteIdade
             ? `${consulta.pacienteIdade} anos`
             : "";
         document.querySelector("#mini-convenio").textContent = consulta.convenio ?? "Particular";
-        document.querySelector("#mini-horario").textContent = consulta.horario ?? "–";
+        document.querySelector("#mini-horario").textContent = consulta.hora ?? "–";
         document.querySelector("#mini-situacao").textContent = "Em atendimento";
 
-        if (consulta.observacao) {
-            document.querySelector("#observacoes").value = consulta.observacao;
+        if (consulta.observacoes) {
+            document.querySelector("#observacoes").value = consulta.observacoes;
         }
     } catch (error) {
         mostrarMensagem(error.message || "Não foi possível carregar a consulta.", true);
@@ -58,10 +58,7 @@ document.querySelector("#btn-finalizar").addEventListener("click", async () => {
         // OBS: a entidade de Consulta no backend ainda não tem campos de
         // prontuário (queixa, histórico, exame físico) — por enquanto tudo
         // isso vai concatenado no campo de observação, junto com o status.
-        await consultaService.atualizar(consultaId, {
-            status: "REALIZADA",
-            observacao: prontuario,
-        });
+        await consultaService.finalizar(consultaId, prontuario);
         window.location.href = "../consultas-do-dia/consultas-do-dia.html";
     } catch (error) {
         mostrarMensagem(error.message || "Não foi possível finalizar a consulta.", true);

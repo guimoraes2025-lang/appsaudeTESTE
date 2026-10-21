@@ -21,7 +21,7 @@ function formatarData(dataISO) {
 
 function pillSituacao(status) {
     const mapa = {
-        PENDENTE: { classe: "pill--agendado", texto: "Agendado" },
+        AGENDADA: { classe: "pill--agendado", texto: "Agendado" },
         CONFIRMADA: { classe: "pill--confirmado", texto: "Confirmada" },
         REALIZADA: { classe: "pill--finalizado", texto: "Finalizada" },
         CANCELADA: { classe: "pill--cancelado", texto: "Cancelada" },
@@ -39,13 +39,13 @@ async function carregar() {
         const consulta = await consultaService.getById(consultaId);
 
         document.querySelector("#subtitulo-consulta").textContent =
-            `Consulta de ${formatarData(consulta.data)}, às ${consulta.horario ?? ""}.`;
+            `Consulta de ${formatarData(consulta.data)}, às ${consulta.hora ?? ""}.`;
 
-        document.querySelector("#info-paciente").textContent = consulta.paciente ?? "–";
-        document.querySelector("#info-medico").textContent = consulta.medico ?? "–";
+        document.querySelector("#info-paciente").textContent = consulta.pacienteNome ?? "–";
+        document.querySelector("#info-medico").textContent = usuario?.nome ?? "–";
         document.querySelector("#info-especialidade").textContent = consulta.especialidade ?? "–";
         document.querySelector("#info-data-hora").textContent =
-            `${formatarData(consulta.data)} às ${consulta.horario ?? ""}`;
+            `${formatarData(consulta.data)} às ${consulta.hora ?? ""}`;
         document.querySelector("#info-convenio").textContent = consulta.convenio ?? "Particular";
 
         const pill = pillSituacao(consulta.status);
@@ -54,9 +54,9 @@ async function carregar() {
         situacaoEl.className = `pill ${pill.classe}`;
 
         document.querySelector("#info-observacao").textContent =
-            consulta.observacao || "Nenhuma observação registrada.";
+            consulta.observacoes || "Nenhuma observação registrada.";
 
-        document.querySelector("#pessoa-nome").textContent = consulta.paciente ?? "–";
+        document.querySelector("#pessoa-nome").textContent = consulta.pacienteNome ?? "–";
         document.querySelector("#pessoa-sub").textContent = consulta.pacienteIdade
             ? `${consulta.pacienteIdade} anos`
             : "";
@@ -84,6 +84,6 @@ document.querySelector("#btn-cancelar").addEventListener("click", async () => {
     }
 });
 document.querySelector("#btn-iniciar-atendimento").addEventListener("click", () => {
-    window.location.href = `../atendimentos/atendimentos.html`;
+    window.location.href = `../atendimentos/atendimentos.html?id=${encodeURIComponent(consultaId)}`;
 });
 carregar();

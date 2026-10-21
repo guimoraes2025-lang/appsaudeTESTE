@@ -18,28 +18,25 @@ public class EntityJpaPaciente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idPaciente")
+    @Column(name = "id_paciente")
     private Long id;
 
-    @Column(name = "nomePaciente", length = 150, nullable = false)
+    @Column(name = "nome_paciente", length = 150, nullable = false)
     private String nome;
 
-    @Column(name = "emailPaciente", length = 150, nullable = false, unique = true)
+    @Column(name = "email_paciente", length = 150, nullable = false, unique = true)
     private String email;
 
-    @Column(name = "senhaPaciente", length = 255, nullable = false)
-    private String senha;
-
-    @Column(name = "telefonePaciente", length = 20)
+    @Column(name = "telefone_paciente", length = 20)
     private String telefonePaciente;
 
-    @Column(name = "cpfPaciente", length = 11, nullable = false, unique = true)
+    @Column(name = "cpf_paciente", length = 11, nullable = false, unique = true)
     private String cpfPaciente;
 
-    @Column(name = "data_nascimentoPaciente")
+    @Column(name = "data_nascimento")
     private LocalDate dataDeNascimento;
 
-    @Column(name = "criado_emPaciente", insertable = false, updatable = false)
+    @Column(name = "criado_em", insertable = false, updatable = false)
     private LocalDateTime criadoEmPaciente;
 
 }

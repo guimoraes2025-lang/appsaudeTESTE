@@ -3,6 +3,7 @@ import { authService } from "../../recursos/chamadaBackEnd/authService.js";
 import { consultaService } from "../../recursos/chamadaBackEnd/consultaService.js";
 import { pacienteService } from "../../recursos/chamadaBackEnd/pacienteService.js";
 import { preencherSidebarUsuario } from "../../recursos/js/sidebarUsuario.js";
+import { escapeHtml } from "../../recursos/js/seguranca.js";
 
 const saudacao = document.querySelector("#saudacao");
 const btnLogout = document.querySelector("#btn-logout");
@@ -24,7 +25,7 @@ function formatarData(dataISO) {
 function badgeStatus(status) {
     const mapa = {
         CONFIRMADA: { classe: "badge--confirmada", texto: "Confirmada" },
-        PENDENTE: { classe: "badge--pendente", texto: "Pendente" },
+        AGENDADA: { classe: "badge--pendente", texto: "Pendente" },
         CANCELADA: { classe: "badge--cancelada", texto: "Cancelada" },
     };
     return mapa[status] || { classe: "badge--pendente", texto: status || "Pendente" };
@@ -33,10 +34,11 @@ function badgeStatus(status) {
 function linkEditar(consulta) {
     const params = new URLSearchParams({
         id: consulta.id,
+        medicoId: consulta.medicoId ?? "",
         especialidade: consulta.especialidade ?? "",
         data: consulta.data ?? "",
-        horario: consulta.horario ?? "",
-        observacao: consulta.observacao ?? "",
+        horario: consulta.hora ?? "",
+        observacao: consulta.observacoes ?? "",
     });
     return `../agendar-consulta/agendar-consulta.html?${params.toString()}`;
 }
@@ -49,8 +51,8 @@ function renderProximaConsulta(consulta) {
 
     proximaConsultaCard.innerHTML = `
         <div class="titulo"><i class="fa-regular fa-calendar"></i> Próxima consulta</div>
-        <p class="especialidade">${consulta.especialidade ?? ""}</p>
-        <p class="detalhes">${formatarData(consulta.data)}, às ${consulta.horario ?? ""} com ${consulta.medico ?? "profissional a definir"}.</p>
+        <p class="especialidade">${escapeHtml(consulta.especialidade)}</p>
+        <p class="detalhes">${formatarData(consulta.data)}, às ${escapeHtml(consulta.hora)} com ${escapeHtml(consulta.medicoNome ?? "profissional a definir")}.</p>
         <a href="../agendar-consulta/agendar-consulta.html" class="btn-outline">
             Agendar outra <i class="fa-solid fa-arrow-right"></i>
         </a>
@@ -71,10 +73,10 @@ function renderListaConsultas(consultas) {
 
             return `
                 <div class="consulta-item">
-                    <p class="horario">${consulta.horario ?? ""}</p>
+                    <p class="horario">${escapeHtml(consulta.hora)}</p>
                     <div class="info">
-                        <strong>${consulta.medico ?? "Profissional a definir"}</strong>
-                        <span>${consulta.especialidade ?? ""} - ${formatarData(consulta.data)}${consulta.local ? ` - ${consulta.local}` : ""}</span>
+                        <strong>${escapeHtml(consulta.medicoNome ?? "Profissional a definir")}</strong>
+                        <span>${escapeHtml(consulta.especialidade)} - ${formatarData(consulta.data)}</span>
                     </div>
                     <div class="lado-direito">
                         <span class="badge ${badge.classe}">${badge.texto}</span>
@@ -113,13 +115,13 @@ async function carregarDashboard() {
 
         statMarcadas.textContent = futuras.length;
         statRealizados.textContent = realizadas.length;
-        statProximoHorario.textContent = futuras[0]?.horario ?? "--:--";
+        statProximoHorario.textContent = futuras[0]?.hora ?? "--:--";
 
         renderProximaConsulta(futuras[0]);
         renderListaConsultas(futuras);
     } catch (error) {
         proximaConsultaCard.innerHTML = `<p class="estado estado--erro">Não foi possível carregar suas consultas.</p>`;
-        listaProximasConsultas.innerHTML = `<p class="estado estado--erro">${error.message || "Erro ao buscar consultas."}</p>`;
+        listaProximasConsultas.textContent = error.message || "Erro ao buscar consultas.";
     }
 
     try {
