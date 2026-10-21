@@ -1,0 +1,10 @@
+.git
+.idea
+.mvn
+.maven-home
+target
+build
+.env
+*.iml
+README.md
+HELP.md
