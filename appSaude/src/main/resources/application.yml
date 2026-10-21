@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: appSaude
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+app:
+  auth:
+    jwt-expiration-ms: ${APP_AUTH_JWT_EXPIRATION_MS:3600000}
